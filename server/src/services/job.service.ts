@@ -92,6 +92,34 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.SharedSpacePersonMetadataBackfill, data: {} };
     }
 
+    case ManualJobName.AssetDeleteCheck: {
+      return { name: JobName.AssetDeleteCheck };
+    }
+
+    case ManualJobName.SessionCleanup: {
+      return { name: JobName.SessionCleanup };
+    }
+
+    case ManualJobName.HlsSessionCleanup: {
+      return { name: JobName.HlsSessionCleanup };
+    }
+
+    case ManualJobName.AuditTableCleanup: {
+      return { name: JobName.AuditTableCleanup };
+    }
+
+    case ManualJobName.UserSyncUsage: {
+      return { name: JobName.UserSyncUsage };
+    }
+
+    case ManualJobName.SharedSpaceAlbumGrantReconcileSweep: {
+      return { name: JobName.SharedSpaceAlbumGrantReconcileSweep };
+    }
+
+    case ManualJobName.SharedSpaceIdentityReconciliationSweep: {
+      return { name: JobName.SharedSpaceIdentityReconciliationSweep };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }

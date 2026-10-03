@@ -1,7 +1,7 @@
 <script lang="ts">
   import QueueCard from './QueueCard.svelte';
   import QueueStorageMigrationDescription from './QueueStorageMigrationDescription.svelte';
-  import { ADMIN_VISIBLE_QUEUES, type AdminVisibleQueue } from '$lib/constants';
+  import { ADMIN_READ_ONLY_QUEUES, ADMIN_VISIBLE_QUEUES, type AdminVisibleQueue } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import { asQueueItem } from '$lib/services/queue.service';
@@ -167,6 +167,12 @@
     {@const queue = queues.find(({ name }) => name === queueName)}
     {#if queue}
       <QueueCard {queue} onCommand={(command) => handleCommand(queueName, command)} {...props} />
+    {/if}
+  {/each}
+  {#each ADMIN_READ_ONLY_QUEUES as queueName (queueName)}
+    {@const queue = queues.find(({ name }) => name === queueName)}
+    {#if queue}
+      <QueueCard {queue} readOnly onCommand={(command) => handleCommand(queueName, command)} />
     {/if}
   {/each}
 </div>

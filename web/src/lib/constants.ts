@@ -351,3 +351,11 @@ export const ADMIN_VISIBLE_QUEUES = [
 ] as const satisfies readonly QueueName[];
 
 export type AdminVisibleQueue = (typeof ADMIN_VISIBLE_QUEUES)[number];
+
+/**
+ * System queues shown on the admin Jobs page as read-only cards: they surface progress and
+ * failures, but have no start, pause or resume controls (the server rejects those commands).
+ * Deliberately separate from ADMIN_VISIBLE_QUEUES, which also drives the command palette's bulk
+ * verbs and must never touch these queues.
+ */
+export const ADMIN_READ_ONLY_QUEUES = [QueueName.BackgroundTask] as const satisfies readonly QueueName[];

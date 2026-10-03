@@ -551,6 +551,14 @@ export enum ManualJobName {
   FaceIdentityBackfill = 'face-identity-backfill',
   FaceSuggestionMaintenance = 'face-suggestion-maintenance',
   SharedSpacePersonMetadataBackfill = 'shared-space-person-metadata-backfill',
+  // Nightly backgroundTask jobs, exposed so they can be run on demand from the admin Jobs page.
+  AssetDeleteCheck = 'asset-delete-check',
+  SessionCleanup = 'session-cleanup',
+  HlsSessionCleanup = 'hls-session-cleanup',
+  AuditTableCleanup = 'audit-table-cleanup',
+  UserSyncUsage = 'user-sync-usage',
+  SharedSpaceAlbumGrantReconcileSweep = 'shared-space-album-grant-reconcile-sweep',
+  SharedSpaceIdentityReconciliationSweep = 'shared-space-identity-reconciliation-sweep',
 }
 
 export const ManualJobNameSchema = z.enum(ManualJobName).describe('Manual job name').meta({ id: 'ManualJobName' });
