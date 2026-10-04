@@ -4,7 +4,6 @@ import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { PostgresError } from 'postgres';
-import { ImmichAdminModule } from 'src/app.module.js';
 import { DatabaseLock, ExitCode, ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository.js';
@@ -161,7 +160,7 @@ class Workers {
   }
 }
 
-function main() {
+async function main() {
   const immichApp = process.argv[2];
   if (immichApp) {
     process.argv.splice(2, 1);
@@ -171,6 +170,9 @@ function main() {
     process.title = 'immich_admin_cli';
     process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
 
+    // Loaded lazily: app.module pulls in every controller, service and repository (~120MB of RSS), and the
+    // long-lived supervisor process below only forks workers, so it must not pay for that graph.
+    const { ImmichAdminModule } = await import('src/app.module.js');
     return CommandFactory.run(ImmichAdminModule);
   }
 
