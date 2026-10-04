@@ -636,7 +636,7 @@ describe(AssetMediaService.name, () => {
       }
     });
 
-    it('should delete uploaded S3 originals directly when the temp cleanup queue fails', async () => {
+    it('should delete the temp upload file directly (no job queue) after syncing to S3', async () => {
       const file = {
         uuid: 'random-uuid',
         originalPath: '/dev/null',
@@ -645,7 +645,6 @@ describe(AssetMediaService.name, () => {
         originalName: 'asset_1.HEIC',
         size: 42,
       };
-      const error = new Error('job queue unavailable');
       const expectedKey = 'upload/user-id/id/_1/id_1';
       const s3Backend = {
         put: vi.fn().mockResolvedValue(void 0),
@@ -657,14 +656,55 @@ describe(AssetMediaService.name, () => {
       (StorageService as any).s3Backend = s3Backend;
       (StorageService as any).writeBackendType = 's3';
       mocks.asset.create.mockResolvedValue(assetEntity);
-      mocks.job.queue.mockRejectedValueOnce(error);
 
       try {
-        await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(error);
+        await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+          id: assetEntity.id,
+          status: AssetMediaStatus.CREATED,
+        });
 
-        expect(s3Backend.delete).toHaveBeenCalledWith(expectedKey);
-        expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
-        expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+        expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetEntity.id, originalPath: expectedKey });
+        expect(mocks.storage.unlink).toHaveBeenCalledWith(file.originalPath);
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+      } finally {
+        (StorageService as any).s3Backend = previousS3Backend;
+        (StorageService as any).writeBackendType = previousWriteBackendType;
+      }
+    });
+
+    it('should not fail the upload when the local temp file cleanup fails after syncing to S3', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: '/dev/null',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const unlinkError = new Error('unlink failed: no such file or directory');
+      const expectedKey = 'upload/user-id/id/_1/id_1';
+      const s3Backend = {
+        put: vi.fn().mockResolvedValue(void 0),
+        delete: vi.fn().mockResolvedValue(void 0),
+      };
+      const previousS3Backend = (StorageService as any).s3Backend;
+      const previousWriteBackendType = (StorageService as any).writeBackendType;
+
+      (StorageService as any).s3Backend = s3Backend;
+      (StorageService as any).writeBackendType = 's3';
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.storage.unlink.mockRejectedValueOnce(unlinkError);
+
+      try {
+        await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+          id: assetEntity.id,
+          status: AssetMediaStatus.CREATED,
+        });
+
+        expect(mocks.storage.unlink).toHaveBeenCalledWith(file.originalPath);
+        expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetEntity.id, originalPath: expectedKey });
+        expect(s3Backend.delete).not.toHaveBeenCalled();
+        expect(mocks.asset.remove).not.toHaveBeenCalled();
       } finally {
         (StorageService as any).s3Backend = previousS3Backend;
         (StorageService as any).writeBackendType = previousWriteBackendType;

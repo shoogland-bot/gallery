@@ -413,8 +413,10 @@ export class AssetMediaService extends BaseService {
         });
         backendFiles.push(relativeKey);
         await this.assetRepository.update({ id: asset.id, originalPath: relativeKey });
-        // Clean up the temp local file
-        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [file.originalPath] } });
+        // Clean up the temp local file directly: it was written to disk by this same process,
+        // so deleting it here can't be foiled by a worker that doesn't share that filesystem
+        // (unlike queuing FileDelete, which may run on a different, e.g. microservices, worker).
+        await this.deleteTempUploadFile(file.originalPath);
 
         if (sidecarFile) {
           const sidecarKey = StorageCore.getRelativeNestedPath(StorageFolder.Upload, ownerId, `${asset.id}.xmp`);
@@ -425,10 +427,7 @@ export class AssetMediaService extends BaseService {
             path: sidecarKey,
             type: AssetFileType.Sidecar,
           });
-          await this.jobRepository.queue({
-            name: JobName.FileDelete,
-            data: { files: [sidecarFile.originalPath] },
-          });
+          await this.deleteTempUploadFile(sidecarFile.originalPath);
         }
       }
 
@@ -459,6 +458,14 @@ export class AssetMediaService extends BaseService {
     }
 
     return asset;
+  }
+
+  private async deleteTempUploadFile(path: string) {
+    try {
+      await this.storageRepository.unlink(path);
+    } catch (error: any) {
+      this.logger.warn(`Failed to remove temp upload file ${path} after syncing to S3: ${error.message}`);
+    }
   }
 
   private requireQuota(auth: AuthDto, size: number) {
