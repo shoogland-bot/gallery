@@ -92,6 +92,22 @@ describe(JobService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.FaceSuggestionMaintenance, data: {} });
     });
 
+    it.each([
+      [ManualJobName.AssetDeleteCheck, JobName.AssetDeleteCheck],
+      [ManualJobName.SessionCleanup, JobName.SessionCleanup],
+      [ManualJobName.HlsSessionCleanup, JobName.HlsSessionCleanup],
+      [ManualJobName.AuditTableCleanup, JobName.AuditTableCleanup],
+      [ManualJobName.UserSyncUsage, JobName.UserSyncUsage],
+      [ManualJobName.SharedSpaceAlbumGrantReconcileSweep, JobName.SharedSpaceAlbumGrantReconcileSweep],
+      [ManualJobName.SharedSpaceIdentityReconciliationSweep, JobName.SharedSpaceIdentityReconciliationSweep],
+    ])('should queue %s as a %s job', async (manual, job) => {
+      await sut.create({ name: manual });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: job });
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
     it('should throw BadRequestException for an invalid job name', async () => {
       await expect(sut.create({ name: 'invalid-job' as ManualJobName })).rejects.toThrow(BadRequestException);
 

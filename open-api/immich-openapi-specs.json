@@ -33490,7 +33490,14 @@
           "integrity-checksum-mismatch-delete-all",
           "face-identity-backfill",
           "face-suggestion-maintenance",
-          "shared-space-person-metadata-backfill"
+          "shared-space-person-metadata-backfill",
+          "asset-delete-check",
+          "session-cleanup",
+          "hls-session-cleanup",
+          "audit-table-cleanup",
+          "user-sync-usage",
+          "shared-space-album-grant-reconcile-sweep",
+          "shared-space-identity-reconciliation-sweep"
         ],
         "type": "string"
       },

@@ -46,6 +46,19 @@
       title: $t('admin.space_person_metadata_backfill_job'),
       value: ManualJobName.SharedSpacePersonMetadataBackfill,
     },
+    { title: $t('admin.asset_delete_check_job'), value: ManualJobName.AssetDeleteCheck },
+    { title: $t('admin.session_cleanup_job'), value: ManualJobName.SessionCleanup },
+    { title: $t('admin.hls_session_cleanup_job'), value: ManualJobName.HlsSessionCleanup },
+    { title: $t('admin.audit_table_cleanup_job'), value: ManualJobName.AuditTableCleanup },
+    { title: $t('admin.user_sync_usage_job'), value: ManualJobName.UserSyncUsage },
+    {
+      title: $t('admin.space_album_grant_reconcile_sweep_job'),
+      value: ManualJobName.SharedSpaceAlbumGrantReconcileSweep,
+    },
+    {
+      title: $t('admin.space_identity_reconciliation_sweep_job'),
+      value: ManualJobName.SharedSpaceIdentityReconciliationSweep,
+    },
   ].map(({ value, title }) => ({ id: value, label: title, value }));
 
   let selectedJob: ComboBoxOption | undefined = $state(undefined);

@@ -11621,7 +11621,14 @@ export enum ManualJobName {
     IntegrityChecksumMismatchDeleteAll = "integrity-checksum-mismatch-delete-all",
     FaceIdentityBackfill = "face-identity-backfill",
     FaceSuggestionMaintenance = "face-suggestion-maintenance",
-    SharedSpacePersonMetadataBackfill = "shared-space-person-metadata-backfill"
+    SharedSpacePersonMetadataBackfill = "shared-space-person-metadata-backfill",
+    AssetDeleteCheck = "asset-delete-check",
+    SessionCleanup = "session-cleanup",
+    HlsSessionCleanup = "hls-session-cleanup",
+    AuditTableCleanup = "audit-table-cleanup",
+    UserSyncUsage = "user-sync-usage",
+    SharedSpaceAlbumGrantReconcileSweep = "shared-space-album-grant-reconcile-sweep",
+    SharedSpaceIdentityReconciliationSweep = "shared-space-identity-reconciliation-sweep"
 }
 export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",

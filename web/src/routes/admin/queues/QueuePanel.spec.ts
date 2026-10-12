@@ -76,4 +76,22 @@ describe('QueuePanel', () => {
       });
     });
   });
+
+  // The nightly cleanup/maintenance jobs all run on the backgroundTask queue. It must be listed
+  // (so they are visible) but read-only: the server rejects pause and start for it.
+  it('renders the background task queue as a read-only card', () => {
+    renderWithTooltips(QueuePanel, {
+      queues: [
+        makeQueue({
+          name: QueueName.BackgroundTask,
+          statistics: { active: 1, completed: 0, delayed: 0, failed: 0, paused: 0, waiting: 2 },
+        }),
+      ],
+    });
+
+    expect(screen.getByText('Background Tasks')).toBeInTheDocument();
+    expect(screen.queryByText('Pause')).not.toBeInTheDocument();
+    expect(screen.queryByText('Clear')).not.toBeInTheDocument();
+    expect(screen.queryByText('Start')).not.toBeInTheDocument();
+  });
 });

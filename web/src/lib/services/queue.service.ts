@@ -296,6 +296,7 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     [QueueName.BackgroundTask]: {
       icon: mdiTrayFull,
       title: $t('admin.background_task_job'),
+      subtitle: $t('admin.background_task_job_description'),
     },
     [QueueName.Search]: {
       icon: '',

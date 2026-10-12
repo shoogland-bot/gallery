@@ -32,13 +32,24 @@
     queue: QueueResponseDto;
     description?: Component;
     disabled?: boolean;
+    /** Hide the start/pause/resume/clear controls (system queues the server won't let you drive). */
+    readOnly?: boolean;
     allText?: string;
     refreshText?: string;
-    missingText: string;
+    missingText?: string;
     onCommand: (command: QueueCommandDto) => void;
   }
 
-  let { queue, description, disabled = false, allText, refreshText, missingText, onCommand }: Props = $props();
+  let {
+    queue,
+    description,
+    disabled = false,
+    readOnly = false,
+    allText,
+    refreshText,
+    missingText = '',
+    onCommand,
+  }: Props = $props();
 
   const { icon, title, subtitle } = $derived(asQueueItem($t, queue));
   const { statistics } = $derived(queue);
@@ -174,64 +185,66 @@
       {/if}
     </div>
   </div>
-  <div class="flex w-full flex-row sm:w-32 sm:flex-col">
-    {#if disabled}
-      <QueueCardButton
-        disabled={true}
-        color="light-gray"
-        onClick={() => onCommand({ command: QueueCommand.Start, force: false })}
-      >
-        <Icon icon={mdiAlertCircle} size="36" />
-        <span>{$t('disabled')}</span>
-      </QueueCardButton>
-    {/if}
+  {#if !readOnly}
+    <div class="flex w-full flex-row sm:w-32 sm:flex-col">
+      {#if disabled}
+        <QueueCardButton
+          disabled={true}
+          color="light-gray"
+          onClick={() => onCommand({ command: QueueCommand.Start, force: false })}
+        >
+          <Icon icon={mdiAlertCircle} size="36" />
+          <span>{$t('disabled')}</span>
+        </QueueCardButton>
+      {/if}
 
-    {#if !disabled && !isIdle}
-      {#if waitingCount > 0}
-        <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Empty, force: false })}>
-          <Icon icon={mdiClose} size="24" />
-          <span>{$t('clear')}</span>
-        </QueueCardButton>
+      {#if !disabled && !isIdle}
+        {#if waitingCount > 0}
+          <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Empty, force: false })}>
+            <Icon icon={mdiClose} size="24" />
+            <span>{$t('clear')}</span>
+          </QueueCardButton>
+        {/if}
+        {#if queue.isPaused}
+          {@const size = waitingCount > 0 ? '24' : '48'}
+          <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Resume, force: false })}>
+            <!-- size property is not reactive, so have to use width and height -->
+            <Icon icon={mdiFastForward} {size} />
+            <span>{$t('resume')}</span>
+          </QueueCardButton>
+        {:else}
+          <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Pause, force: false })}>
+            <Icon icon={mdiPause} size="24" />
+            <span>{$t('pause')}</span>
+          </QueueCardButton>
+        {/if}
       {/if}
-      {#if queue.isPaused}
-        {@const size = waitingCount > 0 ? '24' : '48'}
-        <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Resume, force: false })}>
-          <!-- size property is not reactive, so have to use width and height -->
-          <Icon icon={mdiFastForward} {size} />
-          <span>{$t('resume')}</span>
-        </QueueCardButton>
-      {:else}
-        <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Pause, force: false })}>
-          <Icon icon={mdiPause} size="24" />
-          <span>{$t('pause')}</span>
-        </QueueCardButton>
-      {/if}
-    {/if}
 
-    {#if !disabled && multipleButtons && isIdle}
-      {#if allText}
-        <QueueCardButton color="dark-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: true })}>
-          <Icon icon={mdiAllInclusive} size="24" />
-          <span>{allText}</span>
+      {#if !disabled && multipleButtons && isIdle}
+        {#if allText}
+          <QueueCardButton color="dark-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: true })}>
+            <Icon icon={mdiAllInclusive} size="24" />
+            <span>{allText}</span>
+          </QueueCardButton>
+        {/if}
+        {#if refreshText}
+          <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Start, force: undefined })}>
+            <Icon icon={mdiImageRefreshOutline} size="24" />
+            <span>{refreshText}</span>
+          </QueueCardButton>
+        {/if}
+        <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
+          <Icon icon={mdiSelectionSearch} size="24" />
+          <span>{missingText}</span>
         </QueueCardButton>
       {/if}
-      {#if refreshText}
-        <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Start, force: undefined })}>
-          <Icon icon={mdiImageRefreshOutline} size="24" />
-          <span>{refreshText}</span>
-        </QueueCardButton>
-      {/if}
-      <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
-        <Icon icon={mdiSelectionSearch} size="24" />
-        <span>{missingText}</span>
-      </QueueCardButton>
-    {/if}
 
-    {#if !disabled && !multipleButtons && isIdle}
-      <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
-        <Icon icon={mdiPlay} size="48" />
-        <span>{missingText}</span>
-      </QueueCardButton>
-    {/if}
-  </div>
+      {#if !disabled && !multipleButtons && isIdle}
+        <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
+          <Icon icon={mdiPlay} size="48" />
+          <span>{missingText}</span>
+        </QueueCardButton>
+      {/if}
+    </div>
+  {/if}
 </div>
